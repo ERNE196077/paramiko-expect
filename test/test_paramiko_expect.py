@@ -107,6 +107,7 @@ def test_05_context():
         interact.send('ls -all /')
         interact.expect(prompt, timeout=120)
 
+
 def test_06_take_control_01(interact):
 
     with ExitStack() as stack:
@@ -200,8 +201,20 @@ def test_06_take_control_no_termios_03(interact):
         stdin_mock.read.side_effect = [b"ls -all\n", EOFError()]
         interact.take_control()
 
+def test_07_issues_28_output_clean_is_not_clean_when_cmd_bigger_then_tty(interact):
 
-def test_07_close(interact):
+        interact.expect(prompt)
+        interact.send('\n')
+        interact.expect(prompt)
+        interact.send("echo " + "a"*1000)
+        interact.expect(prompt)
+
+        cmd_output = interact.current_output_clean
+
+        assert cmd_output == "a"*1000 + '\n'
+
+
+def test_last08_close(interact):
 
     with mock.patch.object(interact, 'channel') as channel_mock:
         channel_mock.close.side_effect = [ socket.timeout ]
